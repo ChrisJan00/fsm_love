@@ -80,21 +80,6 @@ local tests = {
     end,
 
     function()
-        -- create machine with 2 tests, switch with expo
-        local currentLabel = "zero"
-        local state1 = fsm.createState("first"):withInit(function() currentLabel = "one" end):expoUpSwitch("second",0.01)
-        local state2 = fsm.createState("second"):withInit(function() currentLabel = "two" end):expoDownSwitch("first",0.01)
-        local testMac = fsm.createMachine():addStates(state1, state2)
-        compare(currentLabel, "zero")
-        testMac:setInitialState("first"):restart()
-        compare(currentLabel,"one")
-        testMac:update(1)
-        compare(currentLabel,"two")
-        testMac:update(1)
-        compare(currentLabel,"one")
-    end,
-
-    function()
         -- create machine with 2 tests, switch with condition
         local currentLabel = "zero"
         local state1 = fsm.createState("first"):withInit(function() currentLabel = "one" end):conditionSwitch("second",function() return true end)

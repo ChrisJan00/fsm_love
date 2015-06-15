@@ -40,8 +40,6 @@ State API:
 
     state:timedSwitch(newState, delay) -> state                 sets a timer so that parent machine will activate newState after delay seconds
     state:conditionSwitch(newState, func) -> state              sets a function that will be called on each call to update, if func returns true parent switches to newState
-    state:expoUpSwitch(newState, factor, [thr]) -> state        increases a value exponentially from 0 to 1 with factor exponent.  When value reaches 1 - 1-e-3 (or thr if given), parent switches
-    state:expoDownSwitch(newState, factor, [thr]) -> state      same as before, decreasing exponentially with factor exponent
 
 
 Examples:

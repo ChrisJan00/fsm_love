@@ -22,25 +22,6 @@
 
 local FSM = {}
 
-local function increaseExponential(dt, var, amount)
-    if var < 1 then
-        var = 1 - (1 - var) * math.pow(amount, 60*dt)
-        if var > 0.999 then
-            var = 1
-        end
-    end
-    return var
-end
-
-local function decreaseExponential(dt, var, amount)
-    if var > 0 then
-        var = var * math.pow(amount, 60*dt)
-        if var < 0.001 then
-            var = 0
-        end
-    end
-    return var
-end
 
 local state_proto = {
     withInit = function(self, func)
@@ -90,35 +71,6 @@ local state_proto = {
         end
         return self
     end,
-    expoUpSwitch = function(self, newState, factor, thr)
-        self.begin = function(self)
-            self.thr = thr or 1
-            self.expoVar = 0
-        end
-
-        self.condition = function(self, dt)
-            self.expoVar = increaseExponential(dt, self.expoVar, factor)
-            if self.expoVar >= self.thr then
-                self.parent:activateState(newState)
-            end
-        end
-        return self
-    end,
-    expoDownSwitch = function(self, newState, factor, thr)
-        self.begin = function(self)
-            self.thr = thr or 0
-            self.expoVar = 1
-        end
-
-        self.condition = function(self, dt)
-            self.expoVar = decreaseExponential(dt, self.expoVar, factor)
-            if self.expoVar <= self.thr then
-                self.parent:activateState(newState)
-            end
-        end
-        return self
-    end,
-
 
 }
 
