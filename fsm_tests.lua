@@ -119,6 +119,43 @@ local tests = {
 
     end,
 
+    function()
+        -- create machine, 3 states.  First state with 2 conditions to each of the other two sets
+
+        local wantedState = "none"
+        local state1 = fsm.createState("first")
+            :conditionSwitch("second", function() return wantedState == "second" end)
+            :conditionSwitch("third", function() return wantedState == "third" end)
+        local state2 = fsm.createState("second")
+            :conditionSwitch("first", function() return true end)
+        local state3 = fsm.createState("third")
+            :conditionSwitch("first", function() return true end)
+        local testMac = fsm.createMachine():addStates(state1, state2, state3)
+        testMac:setInitialState("first"):restart()
+
+        compare(testMac.current.name, "first")
+        testMac:update(1)
+
+        compare(testMac.current.name, "first")
+        wantedState = "third"
+
+        testMac:update(1)
+        compare(testMac.current.name, "third")
+
+        testMac:update(1)
+        compare(testMac.current.name, "first")
+
+        wantedState = "second"
+        testMac:update(1)
+        compare(testMac.current.name, "second")
+
+        testMac:update(1)
+        compare(testMac.current.name, "first")
+
+        testMac:update(1)
+        compare(testMac.current.name, "second")
+    end,
+
 }
 
 runTests(tests)
