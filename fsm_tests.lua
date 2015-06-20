@@ -67,8 +67,8 @@ local tests = {
     function()
         -- create machine with 2 tests, switch between them on timer
         local currentLabel = "zero"
-        local state1 = fsm.createState("first"):withInit(function() currentLabel = "one" end):timedSwitch("second",1)
-        local state2 = fsm.createState("second"):withInit(function() currentLabel = "two" end):timedSwitch("first",1)
+        local state1 = fsm.createState("first"):withBegin(function() currentLabel = "one" end):timedSwitch("second",1)
+        local state2 = fsm.createState("second"):withBegin(function() currentLabel = "two" end):timedSwitch("first",1)
         local testMac = fsm.createMachine():addStates(state1, state2)
         compare(currentLabel, "zero")
         testMac:setInitialState("first"):restart()
@@ -82,8 +82,8 @@ local tests = {
     function()
         -- create machine with 2 tests, switch with condition
         local currentLabel = "zero"
-        local state1 = fsm.createState("first"):withInit(function() currentLabel = "one" end):conditionSwitch("second",function() return true end)
-        local state2 = fsm.createState("second"):withInit(function() currentLabel = "two" end):conditionSwitch("first",function() return false end)
+        local state1 = fsm.createState("first"):withBegin(function() currentLabel = "one" end):conditionSwitch("second",function() return true end)
+        local state2 = fsm.createState("second"):withBegin(function() currentLabel = "two" end):conditionSwitch("first",function() return false end)
         local testMac = fsm.createMachine():addStates(state1, state2)
         compare(currentLabel, "zero")
         testMac:setInitialState("first"):restart()

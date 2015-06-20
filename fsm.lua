@@ -23,26 +23,51 @@
 local FSM = {}
 
 
+-- af = "append functions"
+local function af(first, second)
+    if first then
+        return function(...) first(...) second(...) end
+    else
+        return second
+    end
+end
+
+-- afc = "append functions with condition" -> second is called when first returns false
+local function afc(first, second)
+    if first then
+        return function(...) 
+            if not first(...) then 
+                return second(...) 
+            else 
+                return true
+            end
+        end
+    else
+        return second
+    end
+end
+
 local state_proto = {
-    withInit = function(self, func)
-        self.init = func
+    withBegin = function(self, func)
+        self.begin = af(self.begin, func)
         return self
     end,
 
     withFinish = function(self, func)
-        self.finish = func
+        self.finish = af(self.finish, func)
         return self
     end,
 
-    withUpdate = function(self, func) 
-        self.update = func
+    withUpdate = function(self, func)
+        self.update = af(self.update, func)
         return self
     end,
 
     withDraw = function(self, func)
-        self.draw = func
+        self.draw = af(self.draw, func)
         return self
     end,
+
     copy = function(self)
         local newState = FSM.createState(self.name)
         for k,v in pairs(self) do
@@ -50,25 +75,34 @@ local state_proto = {
         end
         return newState
     end,
-    timedSwitch = function(self, newState, delay)
-        self.begin = function(self)
-            self.timer = delay
-        end
 
-        self.condition = function(self, dt)
-            self.timer = self.timer - dt
-            if self.timer <= 0 then
-                self.parent:activateState(newState)
-            end
-        end
+    timedSwitch = function(self, newState, delay)
+        self.begin = af(self.begin, 
+            function(self)
+                self.timer = delay
+            end)
+
+        self.condition = afc(self.condition,
+            function(self, dt)
+                self.timer = self.timer - dt
+                if self.timer <= 0 then
+                    self.parent:activateState(newState)
+                    return true
+                end
+                return false
+            end)
         return self
     end,
+
     conditionSwitch = function(self, newState, func)
-        self.condition = function(self)
-            if func() then
-                self.parent:activateState(newState)
-            end
-        end
+        self.condition = afc(self.condition,
+            function(self)
+                if func() then
+                    self.parent:activateState(newState)
+                    return true
+                end
+                return false
+            end)
         return self
     end,
 
@@ -100,8 +134,8 @@ local machine_proto = {
     end,
 
     addStates = function(self,...)
-        for i=1,select("#",...) do
-            self:addState(select(i,...))
+        for _,state in ipairs({...}) do
+            self:addState(state)
         end
         return self
     end,
